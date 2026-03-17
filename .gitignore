@@ -1,0 +1,8 @@
+bin/
+obj/
+*.pdb
+*.deps.json
+internal-docs/*
+
+releases/*.zip
+*.zip

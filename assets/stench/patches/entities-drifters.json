@@ -1,0 +1,19 @@
+[
+  {
+    "op": "add",
+    "path": "/server/behaviors/-",
+    "value": { "code": "stench.drifterai" },
+    "file": "game:entities/lore/drifter.json"
+  },
+  {
+    "op": "add",
+    "path": "/server/behaviors/8/aitasks/-",
+    "value": {
+      "code": "stenchfreezenearplayer",
+      "entityCodes": ["player"],
+      "priority": 2.4,
+      "seekingRange": 20
+    },
+    "file": "game:entities/lore/drifter.json"
+  }
+]

@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "file": "stench-client.json",
+  "settings": {
+    "boolean": {
+      "SHOWBAR": {
+        "name": "ShowBar",
+        "ingui": "stench:cfg-showbar",
+        "weight": 1,
+        "comment": "stench:cfg-showbar-comment",
+        "default": true
+      },
+      "SEGMENTEDBAR": {
+        "name": "SegmentedBar",
+        "ingui": "stench:cfg-segmentedbar",
+        "weight": 2,
+        "comment": "stench:cfg-segmentedbar-comment",
+        "default": true
+      },
+      "SHOWOVERLAY": {
+        "name": "ShowOverlay",
+        "ingui": "stench:cfg-showoverlay",
+        "weight": 3,
+        "comment": "stench:cfg-showoverlay-comment",
+        "default": true
+      },
+      "SHOWDEBUGOVERLAY": {
+        "name": "ShowDebugOverlay",
+        "ingui": "stench:cfg-showdebugoverlay",
+        "weight": 4,
+        "comment": "stench:cfg-showdebugoverlay-comment",
+        "default": true
+      }
+    },
+    "integer": {
+      "BAROFFSETXMANUAL": {
+        "name": "BarOffsetXManual",
+        "ingui": "stench:cfg-baroffsetxmanual",
+        "weight": 5,
+        "comment": "stench:cfg-baroffsetxmanual-comment",
+        "default": 0,
+        "range": {
+          "min": -400,
+          "max": 400
+        }
+      },
+      "BAROFFSETYMANUAL": {
+        "name": "BarOffsetYManual",
+        "ingui": "stench:cfg-baroffsetymanual",
+        "weight": 6,
+        "comment": "stench:cfg-baroffsetymanual-comment",
+        "default": 0,
+        "range": {
+          "min": -400,
+          "max": 400
+        }
+      },
+      "DEBUGOFFSETXMANUAL": {
+        "name": "DebugOffsetXManual",
+        "ingui": "stench:cfg-debugoffsetxmanual",
+        "weight": 7,
+        "comment": "stench:cfg-debugoffsetxmanual-comment",
+        "default": 0,
+        "range": {
+          "min": -600,
+          "max": 600
+        }
+      },
+      "DEBUGOFFSETYMANUAL": {
+        "name": "DebugOffsetYManual",
+        "ingui": "stench:cfg-debugoffsetymanual",
+        "weight": 8,
+        "comment": "stench:cfg-debugoffsetymanual-comment",
+        "default": 0,
+        "range": {
+          "min": -200,
+          "max": 600
+        }
+      }
+    }
+  }
+}

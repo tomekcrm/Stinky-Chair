@@ -1,0 +1,21 @@
+Place real mono .ogg files here for ambient fly buzz playback.
+
+Required filenames:
+- l4_01.ogg
+- l4_02.ogg
+- l5_01.ogg
+- l5_02.ogg
+- l5_03.ogg
+
+Recommended duration:
+- Level 4: 2-4 seconds
+- Level 5: 1.5-3 seconds
+
+Recommended format:
+- mono
+- .ogg
+- dry / low-reverb field recording style
+
+Runtime behavior:
+- Level 4 uses l4_* sounds and plays them rarely
+- Level 5 uses l5_* sounds and plays them more often

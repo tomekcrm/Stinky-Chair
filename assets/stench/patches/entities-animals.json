@@ -1,0 +1,26 @@
+[
+  {
+    "op": "add",
+    "path": "/server/behaviors/-",
+    "value": { "code": "stench.sensitivity" },
+    "file": "game:entities/animal/mammal/wolf-adult.json"
+  },
+  {
+    "op": "add",
+    "path": "/server/behaviors/-",
+    "value": { "code": "stench.sensitivity" },
+    "file": "game:entities/animal/mammal/bear-adult.json"
+  },
+  {
+    "op": "add",
+    "path": "/server/behaviors/-",
+    "value": { "code": "stench.sensitivity" },
+    "file": "game:entities/animal/mammal/hyena-adult.json"
+  },
+  {
+    "op": "add",
+    "path": "/server/behaviors/-",
+    "value": { "code": "stench.sensitivity" },
+    "file": "game:entities/animal/mammal/hooved/pig-adult.json"
+  }
+]
