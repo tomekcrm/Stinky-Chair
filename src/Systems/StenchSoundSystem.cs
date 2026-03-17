@@ -36,6 +36,7 @@ namespace StenchMod.Systems
             new BuzzSample("l5_02", 1.00f),
             new BuzzSample("l5_03", 1.00f)
         };
+        private const string WashSoundCode = "playerwash";
         private static readonly HashSet<string> MissingAssetWarnings = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public static float NextBuzzDelaySeconds(int level, StenchConfig config, Random rand)
@@ -81,6 +82,18 @@ namespace StenchMod.Systems
             return debugPath;
         }
 
+        public static string? TryPlayWash(ICoreAPI api, Entity sourceEntity, Entity targetEntity)
+        {
+            if (!TryResolveModSound(api, "wash", WashSoundCode, out AssetLocation sound, out string debugPath))
+            {
+                return null;
+            }
+
+            float pitch = RandomRange(targetEntity.World.Rand, 0.96f, 1.04f);
+            targetEntity.World.PlaySoundAt(sound, targetEntity, null, pitch, 24f, 0.95f);
+            return debugPath;
+        }
+
         private static BuzzSample[] GetPool(int level)
         {
             return level >= 5 ? Level5Buzzes : Level4Buzzes;
@@ -88,20 +101,26 @@ namespace StenchMod.Systems
 
         private static bool TryResolveSound(ICoreAPI api, string code, out AssetLocation sound, out string debugPath)
         {
-            AssetLocation fileAsset = new AssetLocation("stench", $"sounds/flybuzz/{code}.ogg");
+            return TryResolveModSound(api, "flybuzz", code, out sound, out debugPath);
+        }
+
+        private static bool TryResolveModSound(ICoreAPI api, string folder, string code, out AssetLocation sound, out string debugPath)
+        {
+            AssetLocation fileAsset = new AssetLocation("stench", $"sounds/{folder}/{code}.ogg");
             if (api.Assets.Exists(fileAsset))
             {
-                sound = new AssetLocation("stench", $"sounds/flybuzz/{code}");
+                sound = new AssetLocation("stench", $"sounds/{folder}/{code}");
                 debugPath = sound.Path;
                 return true;
             }
 
             sound = default!;
-            debugPath = $"-missing:{code}-";
+            debugPath = $"-missing:{folder}/{code}-";
 
-            if (MissingAssetWarnings.Add(code))
+            string warningKey = $"{folder}/{code}";
+            if (MissingAssetWarnings.Add(warningKey))
             {
-                api.Logger.Warning("[StenchMod] Fly buzz asset missing: {0}", fileAsset);
+                api.Logger.Warning("[StenchMod] Sound asset missing: {0}", fileAsset);
             }
 
             return false;

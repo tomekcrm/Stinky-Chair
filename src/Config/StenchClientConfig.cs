@@ -9,7 +9,7 @@ namespace StenchMod.Config
     /// </summary>
     public class StenchClientConfig
     {
-        public int UiConfigSchemaVersion = 6;
+        public int UiConfigSchemaVersion = 7;
 
         /// <summary>Whether the stench HUD bar is shown.</summary>
         public bool ShowBar = true;
@@ -25,6 +25,18 @@ namespace StenchMod.Config
 
         /// <summary>Whether the debug overlay should be visible on this client.</summary>
         public bool ShowDebugOverlay = true;
+
+        /// <summary>Whether the debug overlay should show the core stench summary.</summary>
+        public bool ShowDebugCore = true;
+
+        /// <summary>Whether the debug overlay should show source and integration details.</summary>
+        public bool ShowDebugSources = true;
+
+        /// <summary>Whether the debug overlay should show effect-related details.</summary>
+        public bool ShowDebugEffects = true;
+
+        /// <summary>Whether the debug overlay should show the watering can probe block.</summary>
+        public bool ShowDebugWateringCanProbe = true;
 
         /// <summary>
         /// Horizontal offset relative to the default HydrateOrDiedrate-style anchor.
@@ -114,6 +126,12 @@ namespace StenchMod.Config
                 }
 
                 UiConfigSchemaVersion = 6;
+                changed = true;
+            }
+
+            if (UiConfigSchemaVersion < 7)
+            {
+                UiConfigSchemaVersion = 7;
                 changed = true;
             }
 

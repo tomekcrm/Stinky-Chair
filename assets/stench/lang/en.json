@@ -39,6 +39,14 @@
   "stench:cfg-showoverlay-comment": "Client-side full-screen grime overlay for high stench levels.",
   "stench:cfg-showdebugoverlay": "Show debug overlay",
   "stench:cfg-showdebugoverlay-comment": "Client-side visibility toggle. Detailed rates still depend on server debug telemetry from stench.json.",
+  "stench:cfg-showdebugcore": "Debug: core",
+  "stench:cfg-showdebugcore-comment": "Shows the compact stench value, level, rates, and thresholds section.",
+  "stench:cfg-showdebugsources": "Debug: sources",
+  "stench:cfg-showdebugsources-comment": "Shows clothing, water, rain, animal, and integration source details.",
+  "stench:cfg-showdebugeffects": "Debug: effects",
+  "stench:cfg-showdebugeffects-comment": "Shows temporal, particles, fly buzz, and other effect-related fields.",
+  "stench:cfg-showdebugwateringcanprobe": "Debug: watering probe",
+  "stench:cfg-showdebugwateringcanprobe-comment": "Shows the watering can probe section used for interact and raycast diagnostics.",
   "stench:cfg-baroffsetxmanual": "Bar X offset",
   "stench:cfg-baroffsetxmanual-comment": "Moves the stench bar horizontally relative to the default HydrateOrDiedrate-style slot on the right side of the bottom HUD.",
   "stench:cfg-baroffsetymanual": "Bar Y offset",
@@ -46,5 +54,23 @@
   "stench:cfg-debugoffsetxmanual": "Debug X offset",
   "stench:cfg-debugoffsetxmanual-comment": "Moves the debug overlay horizontally relative to its default top-right anchor.",
   "stench:cfg-debugoffsetymanual": "Debug Y offset",
-  "stench:cfg-debugoffsetymanual-comment": "Moves the debug overlay vertically relative to its default top-right anchor."
+  "stench:cfg-debugoffsetymanual-comment": "Moves the debug overlay vertically relative to its default top-right anchor.",
+
+  "stench:block-barrel-shower": "Barrel Shower",
+  "stench:block-barrel-shower-part": "Barrel Shower",
+  "stench:block-barrel-shower-top": "Barrel Shower",
+
+  "stench:barrelshower-fill": "{0} / {1} L",
+  "stench:barrelshower-empty": "Empty – fill with water bucket",
+  "stench:barrelshower-toofull": "Shower is already full.",
+  "stench:barrelshower-wrongliquid": "Only water can be added to the shower.",
+  "stench:barrelshower-nospace": "Not enough space above to place shower.",
+  "stench:barrelshower-washing": "The shower washes away your stench.",
+  "stench:barrelshower-on": "Shower turned on.",
+  "stench:barrelshower-off": "Shower turned off.",
+
+  "stench:barrelshower-status-on": "Status: Running",
+  "stench:barrelshower-status-off": "Status: Off",
+  "stench:barrelshower-hint-fill": "Right-click with a water bucket to fill",
+  "stench:barrelshower-hint-toggle": "Right-click with empty hand to turn on / off"
 }

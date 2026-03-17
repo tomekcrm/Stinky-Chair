@@ -6,7 +6,7 @@ It turns dirt, sweat, rain, water, armor, exhaustion, smell, and player presence
 
 This mod is built as an immersion-focused survival feature, not a joke meter. The goal is to make grime feel like part of the world.
 
-Release version: `1.0.0`
+Release version: `1.1.0`
 
 ## Features
 
@@ -15,6 +15,9 @@ Release version: `1.0.0`
 - Custom drifter behavior at the worst stage
 - Global animal detection tuning through `animalSeekingRange`
 - Stage-based HUD bar, dirt overlay, particles, and fly buzz audio
+- Watering-can washing for other players and stench test props
+- Barrel shower block: fillable with water, washes the player standing inside, shows a dynamic water level
+- Extra wash particles during fast cleaning, including swimming and active washing
 - Temporal pressure at stage `5` through the vanilla temporal stability system
 - Client-side UI settings through `ConfigLib`
 - Admin command support for testing and moderation
@@ -36,6 +39,14 @@ What brings hygiene down:
 - swimming
 - standing in water
 - rain, if the player is exposed to the sky
+- being washed by another player using a fired clay watering can
+- standing inside an active barrel shower
+
+The watering-can wash flow is session-based on the server:
+
+- direct right-click on a valid stench target starts washing immediately
+- continuing to pour keeps the same wash session alive
+- vanilla block watering remains untouched
 
 The default stage thresholds are:
 
@@ -51,6 +62,21 @@ The intended rhythm is:
 - Stage `3`: the stealth sweet spot for animal detection
 - Stage `4`: visibly dirty, audible flies, but still no sanity loss
 - Stage `5`: full reek, drifter reaction changes, and temporal pressure begins
+
+## Barrel Shower
+
+The barrel shower is a 3-block tall structure that provides a fixed wash point in a base or camp.
+
+How it works:
+
+- crafted from three vanilla barrels stacked in a column
+- right-click with a water bucket or watering can to fill it (up to 50 litres)
+- right-click with an empty hand to toggle the valve on or off
+- standing inside an active shower reduces stench at the same rate as swimming
+- the tank drains slowly while active; three different sounds play when it runs dry
+- a flat water surface in the top barrel shows the current fill level and rises as the tank fills
+
+The shower has no active effect when the valve is off or the tank is empty. It can be broken from any section and drops as a single item.
 
 ## AI Behavior
 
@@ -145,8 +171,14 @@ Admin and server operators can set hygiene directly:
 
 - `/smrod <player> <0-100>`
 - `/stench <player> <0-100>`
+- `/stenchpropspawn <0-100>`
+- `/smrodprop <0-100>`
+- `/stenchprop <0-100>`
 
-These are useful for testing visuals, audio, AI, and temporal effects without waiting for natural buildup.
+These are useful for testing visuals, audio, AI, temporal effects, and the watering-can wash flow without waiting for natural buildup.
+
+`/stenchpropspawn` creates a stationary vanilla straw dummy with stench behavior attached.
+`/smrodprop` and `/stenchprop` set the value on the prop you are currently looking at.
 
 ## Configuration
 

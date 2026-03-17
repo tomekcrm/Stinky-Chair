@@ -30,13 +30,41 @@
         "weight": 4,
         "comment": "stench:cfg-showdebugoverlay-comment",
         "default": true
+      },
+      "SHOWDEBUGCORE": {
+        "name": "ShowDebugCore",
+        "ingui": "stench:cfg-showdebugcore",
+        "weight": 5,
+        "comment": "stench:cfg-showdebugcore-comment",
+        "default": true
+      },
+      "SHOWDEBUGSOURCES": {
+        "name": "ShowDebugSources",
+        "ingui": "stench:cfg-showdebugsources",
+        "weight": 6,
+        "comment": "stench:cfg-showdebugsources-comment",
+        "default": true
+      },
+      "SHOWDEBUGEFFECTS": {
+        "name": "ShowDebugEffects",
+        "ingui": "stench:cfg-showdebugeffects",
+        "weight": 7,
+        "comment": "stench:cfg-showdebugeffects-comment",
+        "default": true
+      },
+      "SHOWDEBUGWATERINGCANPROBE": {
+        "name": "ShowDebugWateringCanProbe",
+        "ingui": "stench:cfg-showdebugwateringcanprobe",
+        "weight": 8,
+        "comment": "stench:cfg-showdebugwateringcanprobe-comment",
+        "default": true
       }
     },
     "integer": {
       "BAROFFSETXMANUAL": {
         "name": "BarOffsetXManual",
         "ingui": "stench:cfg-baroffsetxmanual",
-        "weight": 5,
+        "weight": 9,
         "comment": "stench:cfg-baroffsetxmanual-comment",
         "default": 0,
         "range": {
@@ -47,7 +75,7 @@
       "BAROFFSETYMANUAL": {
         "name": "BarOffsetYManual",
         "ingui": "stench:cfg-baroffsetymanual",
-        "weight": 6,
+        "weight": 10,
         "comment": "stench:cfg-baroffsetymanual-comment",
         "default": 0,
         "range": {
@@ -58,7 +86,7 @@
       "DEBUGOFFSETXMANUAL": {
         "name": "DebugOffsetXManual",
         "ingui": "stench:cfg-debugoffsetxmanual",
-        "weight": 7,
+        "weight": 11,
         "comment": "stench:cfg-debugoffsetxmanual-comment",
         "default": 0,
         "range": {
@@ -69,7 +97,7 @@
       "DEBUGOFFSETYMANUAL": {
         "name": "DebugOffsetYManual",
         "ingui": "stench:cfg-debugoffsetymanual",
-        "weight": 8,
+        "weight": 12,
         "comment": "stench:cfg-debugoffsetymanual-comment",
         "default": 0,
         "range": {

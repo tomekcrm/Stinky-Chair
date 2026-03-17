@@ -1,0 +1,8 @@
+[
+  {
+    "op": "add",
+    "path": "/server/behaviors/-",
+    "value": { "code": "stench.stench" },
+    "file": "game:entities/nonliving/strawdummy.json"
+  }
+]

@@ -84,6 +84,7 @@ namespace StenchMod.Behaviors
 
         /// <summary>Accumulator for particle spawn timing.</summary>
         private float particleAccum = 0f;
+        private float cleanParticleAccum = 0f;
         private float flyBuzzAccum = 0f;
         private float nextFlyBuzzDelay = -1f;
         private int lastFlyBuzzLevel = 0;
@@ -145,10 +146,37 @@ namespace StenchMod.Behaviors
 
             // Initialise particle definitions once globally
             StenchParticleSystem.Initialize();
+            StenchWashParticleSystem.Initialize();
 
             // Set up Vigor integration if available
             if (entity.Api.Side == EnumAppSide.Server)
                 TryInitVigor(entity.Api);
+        }
+
+        public override void OnInteract(EntityAgent byEntity, ItemSlot itemslot, Vec3d hitPosition, EnumInteractMode mode, ref EnumHandling handled)
+        {
+            base.OnInteract(byEntity, itemslot, hitPosition, mode, ref handled);
+
+            if (entity.Api.Side != EnumAppSide.Server || byEntity == null || itemslot == null || mode != EnumInteractMode.Interact)
+            {
+                return;
+            }
+
+            if (!StenchWashSystem.IsWateringCan(itemslot))
+            {
+                return;
+            }
+
+            if (entity.EntityId == byEntity.EntityId)
+            {
+                return;
+            }
+
+            float removed = StenchWashSystem.PrimeDirectWash(byEntity, entity, "entity-interact");
+            if (removed > 0f)
+            {
+                handled = EnumHandling.PreventSubsequent;
+            }
         }
 
         /// <inheritdoc/>
@@ -236,6 +264,21 @@ namespace StenchMod.Behaviors
                 particleAccum = 0f;
             }
 
+            bool isFastCleaning = stenchValue > 0f && reductionRate > Math.Max(Config.RainReductionPerSecond, Config.WaterStandReductionPerSecond);
+            if (isFastCleaning)
+            {
+                cleanParticleAccum += dt;
+                if (cleanParticleAccum >= 0.20f)
+                {
+                    cleanParticleAccum -= 0.20f;
+                    StenchWashParticleSystem.SpawnAround(player);
+                }
+            }
+            else
+            {
+                cleanParticleAccum = 0f;
+            }
+
             // --- Ambient fly buzz audio ------------------------------------
             TickFlyBuzzAudio(player, dt);
         }
@@ -277,6 +320,22 @@ namespace StenchMod.Behaviors
             }
 
             SyncWatchedAttributes(force: true);
+        }
+
+        /// <summary>
+        /// Applies external cleaning, such as being washed by another entity.
+        /// Returns the effective amount removed after clamping.
+        /// </summary>
+        public float ApplyExternalWash(float amount)
+        {
+            if (amount <= 0f)
+            {
+                return 0f;
+            }
+
+            float previous = stenchValue;
+            SetCurrentValue(stenchValue - amount);
+            return previous - stenchValue;
         }
 
         // -------------------------------------------------------------------------

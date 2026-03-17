@@ -1,0 +1,55 @@
+{
+	"code": "barrel-shower",
+	"class": "BlockBarrelShower",
+	"entityClass": "BarrelShower",
+	"behaviors": [
+		{ "name": "UnstableFalling" }
+	],
+	"shape": { "base": "stench:block/barrel-shower" },
+	"textures": {
+		"aged":         { "base": "game:block/wood/debarked/aged" },
+		"blackbronze4": { "base": "game:block/metal/sheet/blackbronze4" },
+		"bottom":       { "base": "game:block/wood/barrel/bottom" },
+		"null":         { "base": "game:block/meta/unknown" },
+		"barrelwater":  { "base": "stench:block/liquid/barrelwater" }
+	},
+	"blockmaterial": "Wood",
+	"resistance": 2.0,
+	"maxStackSize": 1,
+	"lightAbsorption": 0,
+	"sideao": { "all": false },
+	"sidesolid": { "all": false, "north": true, "east": true, "west": true },
+	"emitsideao": { "all": false },
+	"sideopaque": { "all": false },
+	"replaceable": 0,
+	"collisionboxes": [
+		{ "x1": 0.0,    "y1": 0.0, "z1": 0.0,    "x2": 0.0625, "y2": 1.0,   "z2": 1.0    },
+		{ "x1": 0.9375, "y1": 0.0, "z1": 0.0,    "x2": 1.0,    "y2": 1.0,   "z2": 1.0    },
+		{ "x1": 0.0,    "y1": 0.0, "z1": 0.0,    "x2": 1.0,    "y2": 1.0,   "z2": 0.0625 }
+	],
+	"selectionbox": {
+		"x1": 0.0, "y1": 0.0, "z1": 0.0,
+		"x2": 1.0, "y2": 1.0, "z2": 1.0
+	},
+	"attributes": {
+		"capacityLitres": 50,
+		"topBarrelYMin": 1.9375,
+		"topBarrelYMax": 2.5625,
+		"washRateMultiplier": 1.0,
+		"waterCostPerWashPoint": 0.02,
+		"reinforcable": true,
+		"partialAttachable": true
+	},
+	"sounds": {
+		"place": "block/planks",
+		"hit":   "block/planks",
+		"break": "block/planks",
+		"walk":  "walk/wood"
+	},
+	"combustibleProps": {
+		"burnTemperature": 600,
+		"burnDuration": 40
+	},
+	"materialDensity": 600,
+	"creativeinventory": { "general": ["*"] }
+}

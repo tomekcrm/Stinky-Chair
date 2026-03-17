@@ -1,0 +1,19 @@
+{
+	"textureWidth": 16,
+	"textureHeight": 16,
+	"textures": {
+		"water": "stench:block/liquid/barrelwater"
+	},
+	"elements": [
+		{
+			"name": "liquid_surface",
+			"from": [ 2.0, 33.0, 2.0 ],
+			"to": [ 14.0, 33.2, 14.0 ],
+			"renderPass": 4,
+			"rotationOrigin": [ 8.0, 33.0, 8.0 ],
+			"faces": {
+				"up": { "texture": "#water", "uv": [ 0.0, 0.0, 12.0, 12.0 ] }
+			}
+		}
+	]
+}

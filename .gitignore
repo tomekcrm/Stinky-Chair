@@ -2,7 +2,22 @@ bin/
 obj/
 *.pdb
 *.deps.json
+
+# Local documentation (internal only)
 internal-docs/*
 
+# Release archives
 releases/*.zip
 *.zip
+
+# Compiled root artifact — use bin/Release/ output instead
+StenchMod.dll
+
+# Temporary dev/research scripts
+.tmp_*
+
+# Local IDE and AI tooling config
+.claude/
+
+# Mockup and scratch test assets
+mockup-test-assets/

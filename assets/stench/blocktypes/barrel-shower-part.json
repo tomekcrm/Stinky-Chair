@@ -1,0 +1,24 @@
+{
+	"code": "barrel-shower-part",
+	"class": "BlockBarrelShowerPart",
+	"entityClass": "BarrelShowerPart",
+	"heldItemNameCode": "barrel-shower",
+	"drawtype": "Empty",
+	"blockmaterial": "Wood",
+	"resistance": 2.0,
+	"replaceable": 0,
+	"lightAbsorption": 0,
+	"sidesolid": { "all": false, "north": true, "east": true, "west": true },
+	"sideao": { "all": false },
+	"emitsideao": { "all": false },
+	"sideopaque": { "all": false },
+	"collisionboxes": [
+		{ "x1": 0.0,    "y1": 0.0, "z1": 0.0,    "x2": 0.0625, "y2": 1.0, "z2": 1.0    },
+		{ "x1": 0.9375, "y1": 0.0, "z1": 0.0,    "x2": 1.0,    "y2": 1.0, "z2": 1.0    },
+		{ "x1": 0.0,    "y1": 0.0, "z1": 0.0,    "x2": 1.0,    "y2": 1.0, "z2": 0.0625 }
+	],
+	"selectionbox": {
+		"x1": 0.0, "y1": 0.0, "z1": 0.0,
+		"x2": 1.0, "y2": 1.0, "z2": 1.0
+	}
+}

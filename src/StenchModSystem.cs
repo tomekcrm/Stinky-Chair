@@ -3,13 +3,18 @@ using System.IO;
 using System.Text.Json;
 using StenchMod.AI;
 using StenchMod.Behaviors;
+using StenchMod.CollectibleBehaviors;
+using StenchMod.BlockEntities;
+using StenchMod.Blocks;
 using StenchMod.Client;
 using StenchMod.Config;
 using StenchMod.Systems;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
@@ -28,6 +33,7 @@ namespace StenchMod
     {
         private const string ServerConfigFileName = "stench.json";
         private const string ClientConfigFileName = "stench-client.json";
+        private const string PlayerPropEntityCode = "game:strawdummy";
 
         // -------------------------------------------------------------------------
         // Public state (read by other classes)
@@ -68,6 +74,12 @@ namespace StenchMod
             api.RegisterEntityBehaviorClass("stench.stench", typeof(EntityBehaviorStench));
             api.RegisterEntityBehaviorClass("stench.sensitivity", typeof(EntityBehaviorStenchSensitivity));
             api.RegisterEntityBehaviorClass("stench.drifterai", typeof(EntityBehaviorDrifterStenchAI));
+            api.RegisterCollectibleBehaviorClass("considerpetfood", typeof(ConsiderPetFoodBehavior));
+            api.RegisterBlockClass("StenchWateringCanProbe", typeof(BlockWateringCanProbe));
+            api.RegisterBlockClass("BlockBarrelShower", typeof(BlockBarrelShower));
+            api.RegisterBlockClass("BlockBarrelShowerPart", typeof(BlockBarrelShowerPart));
+            api.RegisterBlockEntityClass("BarrelShower", typeof(BEBarrelShower));
+            api.RegisterBlockEntityClass("BarrelShowerPart", typeof(BEBarrelShowerPart));
 
             AiTaskRegistry.Register<AiTaskStenchFreezeNearPlayer>("stenchfreezenearplayer");
             AiTaskRegistry.Register<AiTaskStenchSeekEntity>("stenchseekentity");
@@ -88,6 +100,7 @@ namespace StenchMod
 
             TemporalAuraSystem ??= new StenchTemporalAuraSystem();
             TemporalAuraSystem.InitializeServer(api);
+            api.Event.RegisterGameTickListener(_ => StenchWashSystem.TickServer(api), 50);
 
             RegisterAdminCommands(api);
 
@@ -168,6 +181,25 @@ namespace StenchMod
                     api.ChatCommands.Parsers.IntRange("value", 0, 100)
                 )
                 .HandleWith(HandleSetPlayerStench);
+
+            api.ChatCommands
+                .Create("stenchpropspawn")
+                .WithDescription("Spawns a stationary stench test prop in front of the caller.")
+                .WithAdditionalInformation("Use a value between 0 and 100 to set the spawned prop stench immediately.")
+                .WithExamples("/stenchpropspawn 0", "/stenchpropspawn 65", "/stenchpropspawn 100")
+                .RequiresPrivilege(Privilege.controlserver)
+                .WithArgs(api.ChatCommands.Parsers.IntRange("value", 0, 100))
+                .HandleWith(args => HandleSpawnStenchProp(api, args));
+
+            api.ChatCommands
+                .Create("smrodprop")
+                .WithDescription("Sets the stench value on the stench prop you are looking at.")
+                .WithAdditionalInformation("Targets the looked-at stench prop via server-side raycast.")
+                .WithExamples("/smrodprop 0", "/smrodprop 35", "/smrodprop 100")
+                .WithAlias("stenchprop")
+                .RequiresPrivilege(Privilege.controlserver)
+                .WithArgs(api.ChatCommands.Parsers.IntRange("value", 0, 100))
+                .HandleWith(HandleSetLookedAtPropStench);
         }
 
         private static TextCommandResult HandleSetPlayerStench(TextCommandCallingArgs args)
@@ -191,6 +223,77 @@ namespace StenchMod
                 $"Set {target.PlayerName} stench to {value}/100.",
                 null
             );
+        }
+
+        private static TextCommandResult HandleSpawnStenchProp(ICoreServerAPI api, TextCommandCallingArgs args)
+        {
+            if (args.Caller?.Player is not IServerPlayer player || player.Entity == null)
+            {
+                return TextCommandResult.Error("This command must be run by an in-world player.", "noplayer");
+            }
+
+            int value = (int)args[0];
+            EntityProperties entityType = api.World.GetEntityType(new AssetLocation(PlayerPropEntityCode));
+            if (entityType == null)
+            {
+                return TextCommandResult.Error($"Entity type {PlayerPropEntityCode} was not found.", "missingentity");
+            }
+
+            Entity entity = api.ClassRegistry.CreateEntity(entityType);
+            if (entity == null)
+            {
+                return TextCommandResult.Error($"Failed to create entity {PlayerPropEntityCode} from registered entity type.", "createfailed");
+            }
+
+            Vec3d spawnPos = GetPropSpawnPosition(player.Entity);
+            entity.ServerPos.X = spawnPos.X;
+            entity.ServerPos.Y = spawnPos.Y;
+            entity.ServerPos.Z = spawnPos.Z;
+            entity.Pos.X = spawnPos.X;
+            entity.Pos.Y = spawnPos.Y;
+            entity.Pos.Z = spawnPos.Z;
+            entity.ServerPos.Yaw = player.Entity.ServerPos.Yaw;
+            entity.Pos.Yaw = player.Entity.ServerPos.Yaw;
+
+            api.World.SpawnEntity(entity);
+            entity.GetBehavior<EntityBehaviorStench>()?.SetCurrentValue(value);
+
+            return TextCommandResult.Success(
+                $"Spawned stench prop at {spawnPos.X:F1}, {spawnPos.Y:F1}, {spawnPos.Z:F1} with stench {value}/100.",
+                null);
+        }
+
+        private static TextCommandResult HandleSetLookedAtPropStench(TextCommandCallingArgs args)
+        {
+            if (args.Caller?.Player is not IServerPlayer player || player.Entity == null)
+            {
+                return TextCommandResult.Error("This command must be run by an in-world player.", "noplayer");
+            }
+
+            int value = (int)args[0];
+            if (!StenchWashSystem.TryResolveTarget(player.Entity, StenchWashSystem.DefaultWashRange + 1f, out Entity targetEntity, out EntityBehaviorStench behavior, out _, out _)
+                || targetEntity.Code?.Path != StenchWashSystem.PlayerPropCodePath)
+            {
+                return TextCommandResult.Error("No stench prop found under your crosshair.", "notarget");
+            }
+
+            behavior.SetCurrentValue(value);
+            return TextCommandResult.Success(
+                $"Set {targetEntity.Code}#{targetEntity.EntityId} stench to {value}/100.",
+                null);
+        }
+
+        private static Vec3d GetPropSpawnPosition(EntityAgent entity)
+        {
+            float yaw = entity.ServerPos.Yaw;
+            double distance = 2.0;
+            double dx = -Math.Sin(yaw) * distance;
+            double dz = Math.Cos(yaw) * distance;
+
+            return new Vec3d(
+                entity.ServerPos.X + dx,
+                entity.ServerPos.Y,
+                entity.ServerPos.Z + dz);
         }
 
         private void CheckForClientConfigReload()
@@ -307,6 +410,10 @@ namespace StenchMod
                 changed |= TryAssignBool(root, "SegmentedBar", value => config.SegmentedBar = value);
                 changed |= TryAssignBool(root, "ShowOverlay", value => config.ShowOverlay = value);
                 changed |= TryAssignBool(root, "DebugMode", value => config.ShowDebugOverlay = value);
+                changed |= TryAssignBool(root, "ShowDebugCore", value => config.ShowDebugCore = value);
+                changed |= TryAssignBool(root, "ShowDebugSources", value => config.ShowDebugSources = value);
+                changed |= TryAssignBool(root, "ShowDebugEffects", value => config.ShowDebugEffects = value);
+                changed |= TryAssignBool(root, "ShowDebugWateringCanProbe", value => config.ShowDebugWateringCanProbe = value);
                 changed |= TryAssignInt(root, "BarOffsetXManual", value => config.BarOffsetXManual = value);
                 changed |= TryAssignInt(root, "BarOffsetYManual", value => config.BarOffsetYManual = value);
                 changed |= TryAssignInt(root, "DebugOffsetXManual", value => config.DebugOffsetXManual = value);

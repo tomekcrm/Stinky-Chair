@@ -1,0 +1,8 @@
+[
+  {
+    "op": "replace",
+    "path": "/class",
+    "value": "StenchWateringCanProbe",
+    "file": "game:blocktypes/clay/fired/wateringcan.json"
+  }
+]
