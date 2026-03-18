@@ -7,6 +7,5 @@
   "authors": ["tomekcrm"],
   "description": "A hygiene and odor survival mod with AI reactions, temporal pressure, HUD feedback, particles, and ambient fly audio.",
   "version": "1.1.0",
-  "dependencies": { "game": "1.21.6" },
-  "optionalDependencies": ["configlib", "vigor", "hydrateordiedrate", "xlib", "xskills"]
+  "dependencies": { "game": "1.21.6" }
 }
