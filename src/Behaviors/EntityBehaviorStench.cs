@@ -121,6 +121,26 @@ namespace StenchMod.Behaviors
         private float lastTotalTempDrainRate = 0f;
 
         // -------------------------------------------------------------------------
+        // Slow-tick optimization: heavy calculations run at ~2Hz instead of ~30Hz
+        // -------------------------------------------------------------------------
+
+        private const float SlowTickInterval = 0.5f;
+        private float slowTickAccum = 0f;
+        private float cachedClothingMult = 1f;
+        private float cachedGainRate = 0f;
+        private float cachedReductionRate = 0f;
+        private bool cachedIsRaining = false;
+
+        // -------------------------------------------------------------------------
+        // Cached references (resolved once, not every tick)
+        // -------------------------------------------------------------------------
+
+        private WeatherSystemBase? cachedWeatherSystem;
+        private EntityBehaviorTemporalStabilityAffected? cachedTemporalBehavior;
+        private bool cachedTemporalBehaviorResolved;
+        private bool animalSeekRangeRegistered;
+
+        // -------------------------------------------------------------------------
         // References
         // -------------------------------------------------------------------------
 
@@ -148,9 +168,12 @@ namespace StenchMod.Behaviors
             StenchParticleSystem.Initialize();
             StenchWashParticleSystem.Initialize();
 
-            // Set up Vigor integration if available
+            // Cache heavy lookups and set up integrations (server-side only)
             if (entity.Api.Side == EnumAppSide.Server)
+            {
+                cachedWeatherSystem = entity.Api.ModLoader.GetModSystem<WeatherSystemBase>();
                 TryInitVigor(entity.Api);
+            }
         }
 
         public override void OnInteract(EntityAgent byEntity, ItemSlot itemslot, Vec3d hitPosition, EnumInteractMode mode, ref EnumHandling handled)
@@ -187,68 +210,79 @@ namespace StenchMod.Behaviors
 
             if (entity is not EntityPlayer player) return;
 
-            // --- Gain -------------------------------------------------------
-            float baseGain      = Config.BaseGainPerSecond * dt;
-            float activityGain  = GetActivityGain(player, dt);
-            float clothingMult  = StenchClothingSystem.GetMultiplier(player, Config);
-            float totalGain     = (baseGain + activityGain) * clothingMult;
-            float maxGain       = Math.Max(0f, Config.MaxGainPerSecond) * dt;
-            if (maxGain > 0f)
+            // Heavy calculations run on a slow tick (~2Hz) to reduce per-tick
+            // overhead.  Particles and audio remain on the normal tick rate for
+            // visual and auditory smoothness.
+            slowTickAccum += dt;
+            bool isSlowTick = slowTickAccum >= SlowTickInterval;
+
+            if (isSlowTick)
             {
-                totalGain = Math.Min(totalGain, maxGain);
+                float slowDt = slowTickAccum;
+                slowTickAccum = 0f;
+
+                // --- Gain -------------------------------------------------------
+                float baseGain      = Config.BaseGainPerSecond * slowDt;
+                float activityGain  = GetActivityGain(player, slowDt);
+                cachedClothingMult  = StenchClothingSystem.GetMultiplier(player, Config);
+                float totalGain     = (baseGain + activityGain) * cachedClothingMult;
+                float maxGain       = Math.Max(0f, Config.MaxGainPerSecond) * slowDt;
+                if (maxGain > 0f)
+                {
+                    totalGain = Math.Min(totalGain, maxGain);
+                }
+
+                // --- Reduction --------------------------------------------------
+                float waterReduction = GetWaterReduction(slowDt);
+                float rainReduction  = GetRainReduction(slowDt, out cachedIsRaining);
+                float totalReduction = waterReduction + rainReduction;
+
+                // --- Update value -----------------------------------------------
+                stenchValue = Math.Clamp(stenchValue + totalGain - totalReduction, 0f, 100f);
+
+                // --- Update level -----------------------------------------------
+                stenchLevel = CalculateLevel(stenchValue);
+
+                // --- Animal detection profile ----------------------------------
+                ApplyAnimalSeekingRangeModifier(player, out float animalSeekTarget, out float animalSeekDelta, out float animalSeekFinal);
+
+                // --- Temporal stability -----------------------------------------
+                ApplyTemporalStabilityEffect(player, slowDt);
+                StenchTemporalAuraSystem.DebugSnapshot auraSnapshot = GetTemporalAuraDebugSnapshot(player);
+
+                cachedGainRate = totalGain / Math.Max(slowDt, 0.001f);
+                cachedReductionRate = totalReduction / Math.Max(slowDt, 0.001f);
+
+                // --- Sync to clients via WatchedAttributes ----------------------
+                // Keep these writes sparse. Repeated player-entity watched updates can
+                // interact badly with player resync mods and cause full playerdata
+                // refreshes, which in turn reset held-item animations client-side.
+                bool syncedStateThisTick = SyncWatchedAttributesIfNeeded();
+
+                // --- Debug attributes -------------------------------------------
+                float buzzEta = GetBuzzEtaSeconds();
+                int buzzLevel = Config.EnableFlyBuzzSounds && stenchLevel >= 4 ? stenchLevel : 0;
+                EntityBehaviorTemporalStabilityAffected? temporalBehavior = GetCachedTemporalBehavior();
+                float ownStability = temporalBehavior != null ? (float)temporalBehavior.OwnStability : 0f;
+
+                MaybeSyncDebugAttributes(
+                    cachedGainRate,
+                    cachedReductionRate,
+                    cachedIsRaining,
+                    cachedClothingMult,
+                    buzzEta,
+                    buzzLevel,
+                    lastPlayedBuzzSound,
+                    animalSeekTarget,
+                    animalSeekDelta,
+                    animalSeekFinal,
+                    auraSnapshot,
+                    ownStability,
+                    slowDt,
+                    syncedStateThisTick);
             }
 
-            // --- Reduction --------------------------------------------------
-            float waterReduction = GetWaterReduction(dt);
-            float rainReduction  = GetRainReduction(dt, out bool isRainingOut);
-            float totalReduction = waterReduction + rainReduction;
-
-            // --- Update value -----------------------------------------------
-            stenchValue = Math.Clamp(stenchValue + totalGain - totalReduction, 0f, 100f);
-
-            // --- Update level -----------------------------------------------
-            stenchLevel = CalculateLevel(stenchValue);
-
-            // --- Animal detection profile ----------------------------------
-            ApplyAnimalSeekingRangeModifier(player, out float animalSeekTarget, out float animalSeekDelta, out float animalSeekFinal);
-
-            // --- Temporal stability -----------------------------------------
-            ApplyTemporalStabilityEffect(player, dt);
-            StenchTemporalAuraSystem.DebugSnapshot auraSnapshot = GetTemporalAuraDebugSnapshot(player);
-
-            float gainRate = totalGain / Math.Max(dt, 0.001f);
-            float reductionRate = totalReduction / Math.Max(dt, 0.001f);
-
-            // --- Sync to clients via WatchedAttributes ----------------------
-            // Keep these writes sparse. Repeated player-entity watched updates can
-            // interact badly with player resync mods and cause full playerdata
-            // refreshes, which in turn reset held-item animations client-side.
-            bool syncedStateThisTick = SyncWatchedAttributesIfNeeded();
-
-            // --- Debug attributes -------------------------------------------
-            float buzzEta = GetBuzzEtaSeconds();
-            int buzzLevel = Config.EnableFlyBuzzSounds && stenchLevel >= 4 ? stenchLevel : 0;
-            EntityBehaviorTemporalStabilityAffected? temporalBehavior =
-                entity.GetBehavior<EntityBehaviorTemporalStabilityAffected>();
-            float ownStability = temporalBehavior != null ? (float)temporalBehavior.OwnStability : 0f;
-
-            MaybeSyncDebugAttributes(
-                gainRate,
-                reductionRate,
-                isRainingOut,
-                clothingMult,
-                buzzEta,
-                buzzLevel,
-                lastPlayedBuzzSound,
-                animalSeekTarget,
-                animalSeekDelta,
-                animalSeekFinal,
-                auraSnapshot,
-                ownStability,
-                dt,
-                syncedStateThisTick);
-
-            // --- Particles --------------------------------------------------
+            // --- Particles (every tick for visual smoothness) ---------------
             if (Config.ShowParticles && stenchLevel >= 3)
             {
                 float particleInterval = GetParticleInterval(stenchLevel);
@@ -264,7 +298,7 @@ namespace StenchMod.Behaviors
                 particleAccum = 0f;
             }
 
-            bool isFastCleaning = stenchValue > 0f && reductionRate > Math.Max(Config.RainReductionPerSecond, Config.WaterStandReductionPerSecond);
+            bool isFastCleaning = stenchValue > 0f && cachedReductionRate > Math.Max(Config.RainReductionPerSecond, Config.WaterStandReductionPerSecond);
             if (isFastCleaning)
             {
                 cleanParticleAccum += dt;
@@ -279,7 +313,7 @@ namespace StenchMod.Behaviors
                 cleanParticleAccum = 0f;
             }
 
-            // --- Ambient fly buzz audio ------------------------------------
+            // --- Ambient fly buzz audio (every tick for audio smoothness) ---
             TickFlyBuzzAudio(player, dt);
         }
 
@@ -469,10 +503,9 @@ namespace StenchMod.Behaviors
         {
             isRaining = false;
 
-            WeatherSystemBase? weatherSys = entity.Api.ModLoader.GetModSystem<WeatherSystemBase>();
-            if (weatherSys == null) return 0f;
+            if (cachedWeatherSystem == null) return 0f;
 
-            float precip = weatherSys.GetPrecipitation(
+            float precip = cachedWeatherSystem.GetPrecipitation(
                 entity.Pos.X, entity.Pos.Y, entity.Pos.Z);
             isRaining = precip > 0.5f;
 
@@ -505,6 +538,16 @@ namespace StenchMod.Behaviors
                     return i + 1;
             }
             return 1;
+        }
+
+        private EntityBehaviorTemporalStabilityAffected? GetCachedTemporalBehavior()
+        {
+            if (!cachedTemporalBehaviorResolved)
+            {
+                cachedTemporalBehavior = entity.GetBehavior<EntityBehaviorTemporalStabilityAffected>();
+                cachedTemporalBehaviorResolved = true;
+            }
+            return cachedTemporalBehavior;
         }
 
         private void ApplyTemporalStabilityEffect(EntityPlayer player, float dt)
@@ -545,8 +588,7 @@ namespace StenchMod.Behaviors
                 return;
             }
 
-            EntityBehaviorTemporalStabilityAffected? behavior =
-                entity.GetBehavior<EntityBehaviorTemporalStabilityAffected>();
+            EntityBehaviorTemporalStabilityAffected? behavior = GetCachedTemporalBehavior();
 
             if (behavior == null)
             {
@@ -583,8 +625,7 @@ namespace StenchMod.Behaviors
             if (!Config.EnableStabilityDrain || stenchLevel < 5)
                 return;
 
-            EntityBehaviorTemporalStabilityAffected? behavior =
-                entity.GetBehavior<EntityBehaviorTemporalStabilityAffected>();
+            EntityBehaviorTemporalStabilityAffected? behavior = GetCachedTemporalBehavior();
 
             if (behavior == null)
                 return;
@@ -624,7 +665,11 @@ namespace StenchMod.Behaviors
             targetMultiplier = 1f;
             stenchDelta = 0f;
 
-            player.Stats.Register(StatAnimalSeekingRange, EnumStatBlendType.WeightedSum);
+            if (!animalSeekRangeRegistered)
+            {
+                player.Stats.Register(StatAnimalSeekingRange, EnumStatBlendType.WeightedSum);
+                animalSeekRangeRegistered = true;
+            }
 
             if (!Config.EnableAnimalSeekingRangeModifier)
             {

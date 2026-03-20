@@ -1,5 +1,14 @@
 # Stinky Chair Changelog
 
+## 1.1.1
+
+Performance optimization release.
+
+- Moved heavy per-tick calculations (clothing scan, weather queries, stat updates, temporal stability, debug sync) to a slow tick running at ~2Hz instead of ~30Hz, reducing server-side overhead by ~15x for those operations
+- Cached WeatherSystemBase and TemporalStabilityAffected behavior references once on initialization instead of resolving them every tick
+- Animal seeking range stat registration now runs once per player instead of every tick
+- Particles and audio remain on the normal tick rate for visual and auditory smoothness
+
 ## 1.1.0
 
 Watering-can washing and barrel shower release.
