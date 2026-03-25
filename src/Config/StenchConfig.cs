@@ -256,7 +256,7 @@ namespace StenchMod.Config
         /// Enables extra server-side WatchedAttributes used by the debug overlay.
         /// The overlay visibility itself is now controlled by the client config.
         /// </summary>
-        public bool DebugMode = true;
+        public bool DebugMode = false;
 
         public bool NormalizeAndMigrate()
         {

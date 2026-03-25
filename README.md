@@ -6,7 +6,7 @@ It turns dirt, sweat, rain, water, armor, exhaustion, smell, and player presence
 
 This mod is built as an immersion-focused survival feature, not a joke meter. The goal is to make grime feel like part of the world.
 
-Release version: `1.1.0`
+Release version: `1.1.2`
 
 ## Features
 

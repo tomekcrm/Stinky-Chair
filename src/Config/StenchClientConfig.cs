@@ -24,7 +24,7 @@ namespace StenchMod.Config
         public bool ShowOverlay = true;
 
         /// <summary>Whether the debug overlay should be visible on this client.</summary>
-        public bool ShowDebugOverlay = true;
+        public bool ShowDebugOverlay = false;
 
         /// <summary>Whether the debug overlay should show the core stench summary.</summary>
         public bool ShowDebugCore = true;

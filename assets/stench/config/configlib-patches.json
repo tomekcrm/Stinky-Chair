@@ -29,7 +29,7 @@
         "ingui": "stench:cfg-showdebugoverlay",
         "weight": 4,
         "comment": "stench:cfg-showdebugoverlay-comment",
-        "default": true
+        "default": false
       },
       "SHOWDEBUGCORE": {
         "name": "ShowDebugCore",

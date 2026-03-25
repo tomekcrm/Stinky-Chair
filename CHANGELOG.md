@@ -1,5 +1,15 @@
 # Stinky Chair Changelog
 
+## 1.1.2
+
+Default debug disable release.
+
+- Disabled server-side debug telemetry by default
+- Disabled client-side debug overlay by default
+- Fixed ConfigLib default so a freshly created `stench-client.json` starts with debug overlay disabled
+- Stopped migrating legacy server `DebugMode` into the client debug-overlay visibility flag
+- Bumped release version to `1.1.2`
+
 ## 1.1.1
 
 Performance optimization release.

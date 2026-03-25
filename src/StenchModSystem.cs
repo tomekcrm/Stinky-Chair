@@ -409,7 +409,6 @@ namespace StenchMod
                 changed |= TryAssignBool(root, "ShowBar", value => config.ShowBar = value);
                 changed |= TryAssignBool(root, "SegmentedBar", value => config.SegmentedBar = value);
                 changed |= TryAssignBool(root, "ShowOverlay", value => config.ShowOverlay = value);
-                changed |= TryAssignBool(root, "DebugMode", value => config.ShowDebugOverlay = value);
                 changed |= TryAssignBool(root, "ShowDebugCore", value => config.ShowDebugCore = value);
                 changed |= TryAssignBool(root, "ShowDebugSources", value => config.ShowDebugSources = value);
                 changed |= TryAssignBool(root, "ShowDebugEffects", value => config.ShowDebugEffects = value);
